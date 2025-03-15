@@ -3,14 +3,14 @@
 - Python 3.11.9
 
 ## Chạy
-### web service
+### Frontend
 ```bash
 $ cd frontend
 $ npm i
 $ npm start
 ```
 
-### client app
+### Backend
 ```bash
 $ cd backend
 $ pip install -r requirements.txt
