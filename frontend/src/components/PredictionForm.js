@@ -1,140 +1,135 @@
-// frontend/src/components/PredictionForm.js
 import React, { useState } from 'react';
 import api from '../services/api';
 
-// Danh sách môn học đã có sẵn
 const SUBJECTS = [
-    // Môn học thuộc nhóm Theory (lý thuyết)
     {
         name: "Đại số",
         code: "BAS1201",
         credits: 3,
-        type: "theory",
-        category: "general",
+        category: "theory",
+        type: "core",
         skills: ["Tư duy logic", "Giải quyết vấn đề", "Tư duy toán học"]
     },
     {
         name: "Giải tích",
         code: "BAS1203",
         credits: 3,
-        type: "theory",
-        category: "general",
+        category: "theory",
+        type: "core",
         skills: ["Phân tích", "Giải quyết vấn đề", "Tư duy toán học"]
     },
     {
         name: "Tiếng Anh",
         code: "BAS1156",
         credits: 2,
-        type: "theory",
-        category: "general",
+        category: "theory",
+        type: "general",
         skills: ["Giao tiếp", "Ngoại ngữ", "Thuyết trình"]
     },
     {
         name: "Xác suất thống kê",
         code: "BAS1226",
         credits: 3,
-        type: "theory",
-        category: "general",
+        category: "theory",
+        type: "core",
         skills: ["Phân tích dữ liệu", "Xử lý số liệu", "Thống kê"]
     },
     {
         name: "Cấu trúc dữ liệu và giải thuật",
         code: "INT1306",
         credits: 3,
-        type: "theory",
-        category: "core",
+        category: "theory",
+        type: "core",
         skills: ["Lập trình", "Tư duy thuật toán", "Tối ưu hóa"]
     },
     {
         name: "Nhập môn trí tuệ nhân tạo",
         code: "INT1341",
         credits: 3,
-        type: "theory",
-        category: "core",
+        category: "theory",
+        type: "core",
         skills: ["Machine Learning", "Xử lý dữ liệu", "Tư duy phân tích"]
     },
     {
         name: "Hệ điều hành",
         code: "INT1319",
         credits: 3,
-        type: "theory",
-        category: "core",
+        category: "theory",
+        type: "core",
         skills: ["Quản lý tài nguyên", "Lập trình hệ thống", "Process"]
     },
     {
         name: "Nhập môn công nghệ phần mềm",
         code: "INT1340",
         credits: 3,
-        type: "theory",
-        category: "core",
+        category: "theory",
+        type: "core",
         skills: ["Quy trình phát triển", "Kiểm thử", "Quản lý dự án"]
     },
 
-    // Môn học thuộc nhóm Technique (kỹ thuật)
     {
         name: "Kỹ năng thuyết trình",
         code: "SKD1101",
         credits: 2,
-        type: "technique",
-        category: "general",
+        category: "technique",
+        type: "general",
         skills: ["Thuyết trình", "Giao tiếp", "Tự tin"]
     },
     {
         name: "Kỹ năng làm việc nhóm",
         code: "SKD1102",
         credits: 2,
-        type: "technique",
-        category: "general",
+        category: "technique",
+        type: "general",
         skills: ["Làm việc nhóm", "Giao tiếp", "Quản lý thời gian"]
     },
     {
         name: "Xử lý tín hiệu số",
         code: "ELE1330",
         credits: 3,
-        type: "technique",
-        category: "core",
+        category: "technique",
+        type: "core",
         skills: ["Xử lý dữ liệu", "Lập trình", "Phân tích tín hiệu"]
     },
     {
         name: "Cơ sở dữ liệu",
         code: "INT1313",
         credits: 3,
-        type: "technique",
-        category: "core",
+        category: "technique",
+        type: "core",
         skills: ["Thiết kế database", "Truy vấn", "Quản lý dữ liệu"]
     },
     {
         name: "Mạng máy tính",
         code: "INT1336",
         credits: 3,
-        type: "technique",
-        category: "core",
+        category: "technique",
+        type: "core",
         skills: ["Quản trị mạng", "Bảo mật", "Giao thức mạng"]
     },
     {
         name: "An toàn và bảo mật hệ thống thông tin",
         code: "INT1303",
         credits: 3,
-        type: "technique",
-        category: "core",
+        category: "technique",
+        type: "core",
         skills: ["Bảo mật", "Mã hóa", "Phân tích rủi ro"]
     },
 
-    // Môn học thuộc nhóm Tool (công nghệ)
     {
         name: "Ngôn ngữ lập trình C++",
         code: "INT1339",
         credits: 3,
-        type: "tool",
-        category: "core",
+        category: "tool",
+        type: "core",
         skills: ["Lập trình", "Giải quyết vấn đề", "Tư duy logic"]
     },
     {
         name: "Lập trình hướng đối tượng",
         code: "INT1332",
         credits: 3,
-        type: "tool",
-        category: "core",
+        category: "tool",
+        type: "core",
         skills: ["Lập trình OOP", "Thiết kế phần mềm", "Mô hình hóa"]
     }
 ];
@@ -147,28 +142,23 @@ const PredictionForm = () => {
 
     // Thông tin cơ bản
     const [studentInfo, setStudentInfo] = useState({
-        student_id: Date.now().toString(), // Tạo ID ngẫu nhiên dựa trên timestamp
+        student_id: Date.now().toString(),
         student_name: '',
         student_current_semester: '',
         student_current_gpa: ''
     });
 
-    // Danh sách môn học đã học
     const [subjectsData, setSubjectsData] = useState([]);
 
-    // Số lượng môn học mỗi trang
     const subjectsPerPage = 6;
 
-    // Tổng số trang
     const totalPages = Math.ceil(SUBJECTS.length / subjectsPerPage);
 
-    // Môn học hiển thị trên trang hiện tại
     const currentSubjects = SUBJECTS.slice(
         (currentPage - 1) * subjectsPerPage,
         currentPage * subjectsPerPage
     );
 
-    // Xử lý thay đổi thông tin sinh viên
     const handleStudentInfoChange = (e) => {
         const { name, value } = e.target;
         setStudentInfo(prev => ({
@@ -177,17 +167,13 @@ const PredictionForm = () => {
         }));
     };
 
-    // Hàm thêm môn học vào danh sách đã học trong PredictionForm.js
     const addSubject = (subjectCode) => {
-        // Kiểm tra xem môn học đã tồn tại trong danh sách chưa
         if (subjectsData.some(item => item.subject_code === subjectCode)) {
             return;
         }
 
-        // Tìm thông tin môn học
         const subject = SUBJECTS.find(s => s.code === subjectCode);
 
-        // Thêm môn học mới vào danh sách
         setSubjectsData(prev => [
             ...prev,
             {
@@ -206,12 +192,10 @@ const PredictionForm = () => {
         ]);
     };
 
-    // Xóa môn học khỏi danh sách đã học
     const removeSubject = (subjectCode) => {
         setSubjectsData(prev => prev.filter(item => item.subject_code !== subjectCode));
     };
 
-    // Cập nhật thông tin môn học
     const updateSubjectData = (subjectCode, field, value) => {
         setSubjectsData(prev =>
             prev.map(item =>
@@ -222,7 +206,6 @@ const PredictionForm = () => {
         );
     };
 
-    // Chuyển trang
     const changePage = (direction) => {
         if (direction === 'next' && currentPage < totalPages) {
             setCurrentPage(currentPage + 1);
@@ -231,21 +214,15 @@ const PredictionForm = () => {
         }
     };
 
-    // Kiểm tra xem môn học đã được thêm vào danh sách chưa
     const isSubjectAdded = (subjectCode) => {
         return subjectsData.some(item => item.subject_code === subjectCode);
     };
 
-    // Hàm chuẩn bị dữ liệu để gửi đến API trong PredictionForm.js
     const prepareData = () => {
-        // Chuyển đổi dữ liệu sang định dạng giống với student_data.csv
         const rows = [];
 
-        // Thêm dữ liệu cho mỗi môn học
         subjectsData.forEach(subject => {
-            // Chỉ thêm các môn có điểm (đã học)
             if (subject.final_grade.trim() !== '') {
-                // Tìm thông tin môn học trong danh sách SUBJECTS để lấy skills
                 const subjectInfo = SUBJECTS.find(s => s.code === subject.subject_code);
                 const skillList = subjectInfo ? subjectInfo.skills.join(', ') : '';
 
@@ -274,11 +251,9 @@ const PredictionForm = () => {
         return rows;
     };
 
-    // Xử lý submit form
     const handleSubmit = async (e) => {
         e.preventDefault();
 
-        // Kiểm tra dữ liệu đầu vào
         if (subjectsData.length === 0) {
             setError('Vui lòng thêm ít nhất một môn học đã học');
             return;

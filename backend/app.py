@@ -98,6 +98,8 @@ def predict_with_data():
         # Tạo DataFrame từ dữ liệu sinh viên
         student_df = pd.DataFrame(student_data)
         
+        print(student_df)
+
         # In thông tin cơ bản để debug
         print(f"Student ID: {student_df['student_id'].iloc[0]}")
         print(f"Số môn học: {len(student_df)}")

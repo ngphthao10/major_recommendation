@@ -1,19 +1,7 @@
-# utils/feature_engineering.py
 import pandas as pd
 import numpy as np
 from collections import defaultdict
-# Thêm vào feature_engineering.py
-def analyze_feature_vector(vector):
-    stats = {
-        "min": min(vector),
-        "max": max(vector),
-        "mean": sum(vector) / len(vector),
-        "zeros": vector.count(0.0),
-        "non_zeros": len(vector) - vector.count(0.0)
-    }
-    print(f"Thống kê vector: {stats}")
 
-# Gọi ở cuối hàm generate_features_from_student_data
 def generate_features_from_student_data(student_df):
     print("Đang tạo đặc trưng từ dữ liệu sinh viên...")
     
@@ -34,12 +22,9 @@ def generate_features_from_student_data(student_df):
     print(f"Thông tin sinh viên: ID={student_id}, Kỳ={semester}, GPA={gpa}")
 
     # Tính điểm trung bình theo loại môn học
-    if 'subject_category' in student_df.columns:
-        avg_by_category = student_df.groupby('subject_category')['final_grade'].mean()
-    else:
-        avg_by_category = pd.Series()
+    avg_by_category = student_df.groupby('subject_category')['final_grade'].mean()
     
-    categories = ['theory', 'technique', 'general', 'project']
+    categories = ['theory', 'technique', 'tool']
     category_grades = {}
     for category in categories:
         if category in avg_by_category:
@@ -58,7 +43,7 @@ def generate_features_from_student_data(student_df):
     else:
         subject_counts = pd.Series()
     
-    subject_types = ['core', 'optional', 'elective']
+    subject_types = ['core', 'general']
     type_counts = {}
     for subject_type in subject_types:
         if subject_type in subject_counts:
@@ -107,13 +92,13 @@ def generate_features_from_student_data(student_df):
         count = data['counts']
         
         if avg_grade >= 8:
-            proficiency = 3  # Giỏi
+            proficiency = 3 
         elif avg_grade >= 6:
-            proficiency = 2  # Khá
+            proficiency = 2 
         elif avg_grade >= 3:
-            proficiency = 1  # Trung bình
+            proficiency = 1 
         else:
-            proficiency = 0  # Yếu
+            proficiency = 0  
         
         skill_proficiency[skill] = {
             'proficiency': proficiency,
@@ -170,27 +155,15 @@ def generate_features_from_student_data(student_df):
     for i, value in enumerate(feature_vector):
         print(f"{i+1}. {value}")
     
-    analyze_feature_vector(feature_vector)
-
 
     print(f"\nĐã tạo {len(feature_vector)} đặc trưng")
     return feature_vector
 
 def _dict_to_vector(feature_dict):
-    """
-    Chuyển đổi từ điển đặc trưng thành vector đặc trưng theo thứ tự chính xác của mô hình.
-    
-    Parameters:
-    feature_dict (dict): Từ điển đặc trưng
-    
-    Returns:
-    list: Vector đặc trưng với 131 phần tử
-    """
-    # Danh sách chính xác các đặc trưng được sử dụng trong mô hình
     model_features = [
         'gpa', 'semester', 'avg_midterm', 'avg_assignment', 'avg_attendance', 'avg_retake',
-        'skill_count', 'avg_theory', 'avg_technique', 'avg_general', 'avg_project',
-        'count_core', 'count_optional', 'count_elective',
+        'skill_count', 'avg_theory', 'avg_technique', 'avg_tool',
+        'count_core', 'count_general',
         'count_average', 'count_good', 'count_excellent',
         'percent_average', 'percent_good', 'percent_excellent',
         'skill_Phân_tích', 'skill_Phân_tích_level', 'skill_Phân_tích_grade',
@@ -234,11 +207,9 @@ def _dict_to_vector(feature_dict):
     
     if len(model_features) != 131:
         print(f"CẢNH BÁO: Danh sách đặc trưng có {len(model_features)} phần tử, cần 131 phần tử!")
-        # Bổ sung nếu thiếu
         while len(model_features) < 131:
             model_features.append(f'extra_feature_{len(model_features) + 1}')
     
-    # Tạo vector đặc trưng theo thứ tự của model_features
     feature_vector = []
     for key in model_features:
         if key in feature_dict:

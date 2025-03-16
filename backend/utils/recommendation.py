@@ -8,14 +8,11 @@ def recommend_major(student_features, model, scaler, feature_matrix, top_n=3):
     print(f"Số lượng đặc trưng của sinh viên: {len(student_features)}")
     print(f"Số lượng đặc trưng mà scaler mong đợi: {scaler.n_features_in_}")
     
-    # Đảm bảo số lượng đặc trưng chính xác
     if len(student_features) != scaler.n_features_in_:
         print("WARNING: Không khớp số lượng đặc trưng!")
         if len(student_features) > scaler.n_features_in_:
-            # Cắt bớt nếu thừa
             student_features = student_features[:scaler.n_features_in_]
         else:
-            # Thêm 0 nếu thiếu
             student_features = student_features + [0] * (scaler.n_features_in_ - len(student_features))
         
         print(f"Đã điều chỉnh số lượng đặc trưng: {len(student_features)}")
