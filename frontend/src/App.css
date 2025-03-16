@@ -895,3 +895,58 @@ input {
     padding: 1.5rem;
   }
 }
+
+
+.result-section {
+  margin-bottom: 30px;
+}
+
+.chart-container {
+  margin: 20px 0;
+  background-color: white;
+  padding: 15px;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.recommendations-container {
+  display: flex;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
+.recommendation-column {
+  flex: 1;
+  min-width: 300px;
+  background-color: white;
+  padding: 15px;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+s .your-grade {
+  color: #d9534f;
+}
+
+.target-grade {
+  color: #5cb85c;
+}
+
+
+.major-info {
+  flex-grow: 1;
+}
+
+.major-info h4 {
+  margin: 0 0 8px 0;
+}
+
+@media (max-width: 768px) {
+  .recommendations-container {
+    flex-direction: column;
+  }
+
+  .recommendation-column {
+    min-width: 100%;
+  }
+}

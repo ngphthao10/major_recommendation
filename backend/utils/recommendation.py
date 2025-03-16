@@ -183,6 +183,6 @@ def comprehensive_recommendation(student_id, df, model, scaler, feature_matrix, 
         "subject_recommendations": subject_recommendations
     }
 
-def get_demo_students(df, limit=5):
+def get_demo_students(df, limit=8):
     """Lấy danh sách ID sinh viên để demo"""
     return df['student_id'].drop_duplicates().head(limit).tolist()

@@ -1,5 +1,19 @@
 import React, { useState } from 'react';
 import api from '../services/api';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
+
+// Thêm kiểu CSS cho thông báo không có dữ liệu
+const styles = {
+    noDataMessage: {
+        padding: '15px',
+        backgroundColor: '#f8f9fa',
+        borderRadius: '6px',
+        color: '#6c757d',
+        fontStyle: 'italic',
+        textAlign: 'center',
+        border: '1px dashed #dee2e6'
+    }
+};
 
 const SUBJECTS = [
     {
@@ -218,6 +232,57 @@ const PredictionForm = () => {
         return subjectsData.some(item => item.subject_code === subjectCode);
     };
 
+    // Phân tích kỹ năng từ các môn học đã chọn
+    const analyzeSkills = () => {
+        const skillsCount = {};
+
+        subjectsData.forEach(subject => {
+            if (subject.final_grade && parseFloat(subject.final_grade) > 0) {
+                const subjectInfo = SUBJECTS.find(s => s.code === subject.subject_code);
+                if (subjectInfo && subjectInfo.skills) {
+                    subjectInfo.skills.forEach(skill => {
+                        if (!skillsCount[skill]) {
+                            skillsCount[skill] = 0;
+                        }
+                        skillsCount[skill] += 1;
+                    });
+                }
+            }
+        });
+
+        // Chuyển object thành array và sắp xếp
+        return Object.entries(skillsCount)
+            .map(([name, count]) => ({ name, count }))
+            .sort((a, b) => b.count - a.count)
+            .slice(0, 10); // Lấy top 10 kỹ năng
+    };
+
+    // Đề xuất các môn học có thể học tiếp
+    const suggestNewSubjects = () => {
+        // Lấy danh sách các môn đã có điểm
+        const currentSubjectCodes = subjectsData
+            .filter(subject => subject.final_grade && parseFloat(subject.final_grade) > 0)
+            .map(subject => subject.subject_code);
+
+        // Gợi ý các môn học chưa có trong danh sách đã học
+        return SUBJECTS
+            .filter(subject => !currentSubjectCodes.includes(subject.code))
+            .slice(0, 5); // Lấy 5 môn đầu tiên
+    };
+
+    // Đề xuất các môn học cần cải thiện
+    const suggestImprovements = () => {
+        // Lấy các môn học có điểm dưới 7
+        return subjectsData
+            .filter(subject =>
+                subject.final_grade &&
+                parseFloat(subject.final_grade) > 0 &&
+                parseFloat(subject.final_grade) < 7
+            )
+            .sort((a, b) => parseFloat(a.final_grade) - parseFloat(b.final_grade))
+            .slice(0, 5); // Lấy 5 môn có điểm thấp nhất
+    };
+
     const prepareData = () => {
         const rows = [];
 
@@ -272,7 +337,27 @@ const PredictionForm = () => {
             console.log("Dữ liệu gửi đi:", data);
 
             const response = await api.predictMajorWithStudentData(data);
-            setResult(response);
+
+            // Bổ sung phân tích kỹ năng và gợi ý môn học
+            const enhancedResult = {
+                ...response,
+                skills: analyzeSkills(),
+                subject_recommendations: {
+                    new_subjects: suggestNewSubjects().map(subject => ({
+                        subject_name: subject.name,
+                        subject_code: subject.code,
+                        final_grade: 8.0 // Giá trị mặc định cho điểm trung bình ngành
+                    })),
+                    improve_subjects: suggestImprovements().map(subject => ({
+                        subject_name_student: subject.subject_name,
+                        subject_code: subject.subject_code,
+                        final_grade_student: parseFloat(subject.final_grade),
+                        final_grade_target: 8.0 // Giá trị mặc định cho điểm cần đạt
+                    }))
+                }
+            };
+
+            setResult(enhancedResult);
         } catch (err) {
             setError('Lỗi khi dự đoán: ' + (err.message || err));
         } finally {
@@ -288,7 +373,6 @@ const PredictionForm = () => {
                 <div className="form-section">
                     <h3>Thông tin cơ bản</h3>
                     <div className="form-row">
-
                         <div className="form-group">
                             <label htmlFor="student_current_gpa">GPA hiện tại:</label>
                             <input
@@ -481,19 +565,92 @@ const PredictionForm = () => {
             {result && (
                 <div className="prediction-result">
                     <h3>Kết quả dự đoán</h3>
-                    <div className="major-recommendations">
-                        {result.majors.map((item, index) => (
-                            <div key={index} className="major-item">
-                                <div className="major-rank">{index + 1}</div>
-                                <div className="major-info">
-                                    <h4>{item.major}</h4>
-                                    <div className="probability-bar">
-                                        <div className="probability-fill" style={{ width: `${item.probability * 100}%` }}></div>
-                                        <span className="probability-text">{(item.probability * 100).toFixed(1)}%</span>
-                                    </div>
+
+                    {/* Phần dự đoán chuyên ngành */}
+                    <div className="section">
+                        <h3>Chuyên ngành phù hợp</h3>
+                        <div className="chart-container">
+                            <ResponsiveContainer width="100%" height={300}>
+                                <BarChart data={result.majors.map(major => ({
+                                    name: major.major,
+                                    probability: Math.round(major.probability * 100)
+                                }))}>
+                                    <CartesianGrid strokeDasharray="3 3" />
+                                    <XAxis dataKey="name" />
+                                    <YAxis label={{ value: 'Xác suất (%)', angle: -90, position: 'insideLeft' }} />
+                                    <Tooltip />
+                                    <Legend />
+                                    <Bar dataKey="probability" fill="#8884d8" name="Xác suất (%)" />
+                                </BarChart>
+                            </ResponsiveContainer>
+                        </div>
+                        <div className="recommendations">
+                            {result.majors.map((item, index) => (
+                                <div key={index} className="recommendation-item">
+                                    <h4>{index + 1}. {item.major}</h4>
+                                    <p>Xác suất: {(item.probability * 100).toFixed(2)}%</p>
                                 </div>
+                            ))}
+                        </div>
+                    </div>
+
+                    {/* Phần kỹ năng nổi bật */}
+                    <div className="section">
+                        <h3>Kỹ năng nổi bật</h3>
+                        {result.skills && result.skills.length > 0 ? (
+                            <div className="chart-container">
+                                <ResponsiveContainer width="100%" height={300}>
+                                    <BarChart data={result.skills} layout="vertical">
+                                        <CartesianGrid strokeDasharray="3 3" />
+                                        <XAxis type="number" />
+                                        <YAxis dataKey="name" type="category" width={150} />
+                                        <Tooltip />
+                                        <Legend />
+                                        <Bar dataKey="count" fill="#82ca9d" name="Số môn học có kỹ năng" />
+                                    </BarChart>
+                                </ResponsiveContainer>
                             </div>
-                        ))}
+                        ) : (
+                            <p style={styles.noDataMessage}>Không có dữ liệu kỹ năng. Vui lòng nhập điểm cho nhiều môn học hơn để phân tích kỹ năng.</p>
+                        )}
+                    </div>
+
+                    {/* Phần gợi ý môn học */}
+                    <div className="section">
+                        <h3>Gợi ý môn học</h3>
+                        <div className="subsection">
+                            <h4>Môn học mới nên học</h4>
+                            {result.subject_recommendations && result.subject_recommendations.new_subjects && result.subject_recommendations.new_subjects.length > 0 ? (
+                                <ul className="subject-list">
+                                    {result.subject_recommendations.new_subjects.map((subject, index) => (
+                                        <li key={index} className="subject-item">
+                                            <span className="subject-name">{subject.subject_name}</span>
+                                            <span className="subject-grade">Điểm TB ngành: {subject.final_grade.toFixed(1)}</span>
+                                        </li>
+                                    ))}
+                                </ul>
+                            ) : (
+                                <p style={styles.noDataMessage}>Không có môn học mới để gợi ý.</p>
+                            )}
+                        </div>
+                        <div className="subsection">
+                            <h4>Môn học cần cải thiện</h4>
+                            {result.subject_recommendations && result.subject_recommendations.improve_subjects && result.subject_recommendations.improve_subjects.length > 0 ? (
+                                <ul className="subject-list">
+                                    {result.subject_recommendations.improve_subjects.map((subject, index) => (
+                                        <li key={index} className="subject-item">
+                                            <span className="subject-name">{subject.subject_name_student}</span>
+                                            <div className="subject-grades">
+                                                <span className="your-grade">Điểm của bạn: {subject.final_grade_student.toFixed(1)}</span>
+                                                <span className="target-grade">Điểm TB ngành: {subject.final_grade_target.toFixed(1)}</span>
+                                            </div>
+                                        </li>
+                                    ))}
+                                </ul>
+                            ) : (
+                                <p style={styles.noDataMessage}>Không có môn học nào cần cải thiện.</p>
+                            )}
+                        </div>
                     </div>
                 </div>
             )}

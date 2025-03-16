@@ -52,7 +52,7 @@ def health():
 
 @app.route('/api/students/demo', methods=['GET'])
 def get_demo_student_list():
-    limit = request.args.get('limit', default=5, type=int)
+    limit = request.args.get('limit', default=8, type=int)
     demo_students = get_demo_students(df, limit)
     return jsonify(demo_students)
 

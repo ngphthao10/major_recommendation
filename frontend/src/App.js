@@ -1,5 +1,5 @@
 import React from 'react';
-import { BrowserRouter as Router, Route, Routes, Link } from 'react-router-dom';
+import { BrowserRouter as Router, Route, Routes, Link, NavLink } from 'react-router-dom';
 import HomePage from './pages/HomePage';
 import StudentPage from './pages/StudentPage';
 import PredictionPage from './pages/PredictionPage';
@@ -17,6 +17,7 @@ function App() {
             <Link to="/">Trang chủ</Link>
             <Link to="/predict">Dự đoán</Link>
           </nav>
+
         </header>
 
         <main className="app-content">
