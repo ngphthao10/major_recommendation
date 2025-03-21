@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import api from '../services/api';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 
@@ -12,6 +12,13 @@ const styles = {
         fontStyle: 'italic',
         textAlign: 'center',
         border: '1px dashed #dee2e6'
+    },
+    infoBox: {
+        padding: '10px 15px',
+        backgroundColor: '#e7f3ff',
+        borderRadius: '6px',
+        marginBottom: '20px',
+        border: '1px solid #b8daff'
     }
 };
 
@@ -22,7 +29,13 @@ const SUBJECTS = [
         credits: 3,
         category: "theory",
         type: "core",
-        skills: ["Tư duy logic", "Giải quyết vấn đề", "Tư duy toán học"]
+        no_theory: 30,
+        no_practice: 15,
+        skills: ["Tư duy logic", "Giải quyết vấn đề", "Tư duy toán học"],
+        attendance_percentage: 10.0,
+        midterm_percentage: 30.0,
+        final_percentage: 50.0,
+        assignment_percentage: 10.0
     },
     {
         name: "Giải tích",
@@ -30,7 +43,13 @@ const SUBJECTS = [
         credits: 3,
         category: "theory",
         type: "core",
-        skills: ["Phân tích", "Giải quyết vấn đề", "Tư duy toán học"]
+        no_theory: 30,
+        no_practice: 15,
+        skills: ["Phân tích", "Giải quyết vấn đề", "Tư duy toán học"],
+        attendance_percentage: 10.0,
+        midterm_percentage: 30.0,
+        final_percentage: 50.0,
+        assignment_percentage: 10.0
     },
     {
         name: "Tiếng Anh",
@@ -38,7 +57,13 @@ const SUBJECTS = [
         credits: 2,
         category: "theory",
         type: "general",
-        skills: ["Giao tiếp", "Ngoại ngữ", "Thuyết trình"]
+        no_theory: 30,
+        no_practice: 0,
+        skills: ["Giao tiếp", "Ngoại ngữ", "Thuyết trình"],
+        attendance_percentage: 20.0,
+        midterm_percentage: 30.0,
+        final_percentage: 50.0,
+        assignment_percentage: 0.0
     },
     {
         name: "Xác suất thống kê",
@@ -46,7 +71,13 @@ const SUBJECTS = [
         credits: 3,
         category: "theory",
         type: "core",
-        skills: ["Phân tích dữ liệu", "Xử lý số liệu", "Thống kê"]
+        no_theory: 30,
+        no_practice: 15,
+        skills: ["Phân tích dữ liệu", "Xử lý số liệu", "Thống kê"],
+        attendance_percentage: 10.0,
+        midterm_percentage: 30.0,
+        final_percentage: 50.0,
+        assignment_percentage: 10.0
     },
     {
         name: "Cấu trúc dữ liệu và giải thuật",
@@ -54,7 +85,13 @@ const SUBJECTS = [
         credits: 3,
         category: "theory",
         type: "core",
-        skills: ["Lập trình", "Tư duy thuật toán", "Tối ưu hóa"]
+        no_theory: 30,
+        no_practice: 15,
+        skills: ["Lập trình", "Tư duy thuật toán", "Tối ưu hóa"],
+        attendance_percentage: 10.0,
+        midterm_percentage: 30.0,
+        final_percentage: 50.0,
+        assignment_percentage: 10.0
     },
     {
         name: "Nhập môn trí tuệ nhân tạo",
@@ -62,7 +99,13 @@ const SUBJECTS = [
         credits: 3,
         category: "theory",
         type: "core",
-        skills: ["Machine Learning", "Xử lý dữ liệu", "Tư duy phân tích"]
+        no_theory: 30,
+        no_practice: 15,
+        skills: ["Machine Learning", "Xử lý dữ liệu", "Tư duy phân tích"],
+        attendance_percentage: 10.0,
+        midterm_percentage: 30.0,
+        final_percentage: 50.0,
+        assignment_percentage: 10.0
     },
     {
         name: "Hệ điều hành",
@@ -70,7 +113,13 @@ const SUBJECTS = [
         credits: 3,
         category: "theory",
         type: "core",
-        skills: ["Quản lý tài nguyên", "Lập trình hệ thống", "Process"]
+        no_theory: 30,
+        no_practice: 15,
+        skills: ["Quản lý tài nguyên", "Lập trình hệ thống", "Process"],
+        attendance_percentage: 10.0,
+        midterm_percentage: 30.0,
+        final_percentage: 50.0,
+        assignment_percentage: 10.0
     },
     {
         name: "Nhập môn công nghệ phần mềm",
@@ -78,16 +127,27 @@ const SUBJECTS = [
         credits: 3,
         category: "theory",
         type: "core",
-        skills: ["Quy trình phát triển", "Kiểm thử", "Quản lý dự án"]
+        no_theory: 30,
+        no_practice: 15,
+        skills: ["Quy trình phát triển", "Kiểm thử", "Quản lý dự án"],
+        attendance_percentage: 10.0,
+        midterm_percentage: 30.0,
+        final_percentage: 50.0,
+        assignment_percentage: 10.0
     },
-
     {
         name: "Kỹ năng thuyết trình",
         code: "SKD1101",
         credits: 2,
         category: "technique",
         type: "general",
-        skills: ["Thuyết trình", "Giao tiếp", "Tự tin"]
+        no_theory: 15,
+        no_practice: 15,
+        skills: ["Thuyết trình", "Giao tiếp", "Tự tin"],
+        attendance_percentage: 20.0,
+        midterm_percentage: 30.0,
+        final_percentage: 50.0,
+        assignment_percentage: 0.0
     },
     {
         name: "Kỹ năng làm việc nhóm",
@@ -95,7 +155,13 @@ const SUBJECTS = [
         credits: 2,
         category: "technique",
         type: "general",
-        skills: ["Làm việc nhóm", "Giao tiếp", "Quản lý thời gian"]
+        no_theory: 15,
+        no_practice: 15,
+        skills: ["Làm việc nhóm", "Giao tiếp", "Quản lý thời gian"],
+        attendance_percentage: 20.0,
+        midterm_percentage: 30.0,
+        final_percentage: 50.0,
+        assignment_percentage: 0.0
     },
     {
         name: "Xử lý tín hiệu số",
@@ -103,7 +169,13 @@ const SUBJECTS = [
         credits: 3,
         category: "technique",
         type: "core",
-        skills: ["Xử lý dữ liệu", "Lập trình", "Phân tích tín hiệu"]
+        no_theory: 30,
+        no_practice: 15,
+        skills: ["Xử lý dữ liệu", "Lập trình", "Phân tích tín hiệu"],
+        attendance_percentage: 10.0,
+        midterm_percentage: 30.0,
+        final_percentage: 50.0,
+        assignment_percentage: 10.0
     },
     {
         name: "Cơ sở dữ liệu",
@@ -111,7 +183,13 @@ const SUBJECTS = [
         credits: 3,
         category: "technique",
         type: "core",
-        skills: ["Thiết kế database", "Truy vấn", "Quản lý dữ liệu"]
+        no_theory: 30,
+        no_practice: 15,
+        skills: ["Thiết kế database", "Truy vấn", "Quản lý dữ liệu"],
+        attendance_percentage: 10.0,
+        midterm_percentage: 30.0,
+        final_percentage: 50.0,
+        assignment_percentage: 10.0
     },
     {
         name: "Mạng máy tính",
@@ -119,7 +197,13 @@ const SUBJECTS = [
         credits: 3,
         category: "technique",
         type: "core",
-        skills: ["Quản trị mạng", "Bảo mật", "Giao thức mạng"]
+        no_theory: 30,
+        no_practice: 15,
+        skills: ["Quản trị mạng", "Bảo mật", "Giao thức mạng"],
+        attendance_percentage: 10.0,
+        midterm_percentage: 30.0,
+        final_percentage: 50.0,
+        assignment_percentage: 10.0
     },
     {
         name: "An toàn và bảo mật hệ thống thông tin",
@@ -127,16 +211,27 @@ const SUBJECTS = [
         credits: 3,
         category: "technique",
         type: "core",
-        skills: ["Bảo mật", "Mã hóa", "Phân tích rủi ro"]
+        no_theory: 30,
+        no_practice: 15,
+        skills: ["Bảo mật", "Mã hóa", "Phân tích rủi ro"],
+        attendance_percentage: 10.0,
+        midterm_percentage: 30.0,
+        final_percentage: 50.0,
+        assignment_percentage: 10.0
     },
-
     {
         name: "Ngôn ngữ lập trình C++",
         code: "INT1339",
         credits: 3,
         category: "tool",
         type: "core",
-        skills: ["Lập trình", "Giải quyết vấn đề", "Tư duy logic"]
+        no_theory: 15,
+        no_practice: 30,
+        skills: ["Lập trình", "Giải quyết vấn đề", "Tư duy logic"],
+        attendance_percentage: 10.0,
+        midterm_percentage: 30.0,
+        final_percentage: 50.0,
+        assignment_percentage: 10.0
     },
     {
         name: "Lập trình hướng đối tượng",
@@ -144,7 +239,13 @@ const SUBJECTS = [
         credits: 3,
         category: "tool",
         type: "core",
-        skills: ["Lập trình OOP", "Thiết kế phần mềm", "Mô hình hóa"]
+        no_theory: 15,
+        no_practice: 30,
+        skills: ["Lập trình OOP", "Thiết kế phần mềm", "Mô hình hóa"],
+        attendance_percentage: 10.0,
+        midterm_percentage: 30.0,
+        final_percentage: 50.0,
+        assignment_percentage: 10.0
     }
 ];
 
@@ -154,18 +255,17 @@ const PredictionForm = () => {
     const [result, setResult] = useState(null);
     const [currentPage, setCurrentPage] = useState(1);
 
-    // Thông tin cơ bản
+    // Thông tin cơ bản - được tính toán tự động
     const [studentInfo, setStudentInfo] = useState({
         student_id: Date.now().toString(),
         student_name: '',
-        student_current_semester: '',
-        student_current_gpa: ''
+        student_current_gpa: '' // Sẽ được tính từ các môn học
     });
 
     const [subjectsData, setSubjectsData] = useState([]);
+    const [calculatedGPA, setCalculatedGPA] = useState(0);
 
     const subjectsPerPage = 6;
-
     const totalPages = Math.ceil(SUBJECTS.length / subjectsPerPage);
 
     const currentSubjects = SUBJECTS.slice(
@@ -173,11 +273,56 @@ const PredictionForm = () => {
         currentPage * subjectsPerPage
     );
 
-    const handleStudentInfoChange = (e) => {
-        const { name, value } = e.target;
+    // Tính GPA và ước tính học kỳ hiện tại dựa trên môn học đã hoàn thành
+    useEffect(() => {
+        calculateGPAAndSemester();
+    }, [subjectsData]);
+
+    const calculateGPAAndSemester = () => {
+        // Chỉ tính các môn có điểm cuối kỳ
+        const completedSubjects = subjectsData.filter(
+            subject => subject.final_grade && parseFloat(subject.final_grade) > 0
+        );
+
+        if (completedSubjects.length === 0) {
+            setCalculatedGPA(0);
+            return;
+        }
+
+        let totalCredits = 0;
+        let weightedScore = 0;
+
+        completedSubjects.forEach(subject => {
+            const subjectInfo = SUBJECTS.find(s => s.code === subject.subject_code);
+            if (subjectInfo) {
+                const credits = subjectInfo.credits;
+
+                // Lấy các điểm thành phần, sử dụng 0 nếu không có
+                const attendanceGrade = subject.attendance_grade ? parseFloat(subject.attendance_grade) : 0;
+                const midtermGrade = subject.midterm_grade ? parseFloat(subject.midterm_grade) : 0;
+                const assignmentGrade = subject.assignment_grade ? parseFloat(subject.assignment_grade) : 0;
+                const finalGrade = subject.final_grade ? parseFloat(subject.final_grade) : 0;
+                const attendancePercentage = attendanceGrade * 10;
+
+                const calculatedGrade =
+                    (finalGrade * subjectInfo.final_percentage +
+                        midtermGrade * subjectInfo.midterm_percentage +
+                        assignmentGrade * subjectInfo.assignment_percentage +
+                        attendancePercentage * subjectInfo.attendance_percentage / 100.0) / 100.0;
+
+                totalCredits += credits;
+                weightedScore += credits * calculatedGrade;
+            }
+        });
+
+        // Tính GPA
+        const gpa = totalCredits > 0 ? (weightedScore / totalCredits).toFixed(2) : 0;
+        setCalculatedGPA(gpa);
+
+        // Cập nhật thông tin sinh viên
         setStudentInfo(prev => ({
             ...prev,
-            [name]: value
+            student_current_gpa: gpa.toString(),
         }));
     };
 
@@ -294,7 +439,6 @@ const PredictionForm = () => {
                 const row = {
                     student_id: studentInfo.student_id,
                     student_name: studentInfo.student_name,
-                    student_current_semester: studentInfo.student_current_semester,
                     student_current_gpa: studentInfo.student_current_gpa,
                     subject_code: subject.subject_code,
                     subject_name: subject.subject_name,
@@ -319,13 +463,12 @@ const PredictionForm = () => {
     const handleSubmit = async (e) => {
         e.preventDefault();
 
-        if (subjectsData.length === 0) {
-            setError('Vui lòng thêm ít nhất một môn học đã học');
-            return;
-        }
+        const completedSubjects = subjectsData.filter(
+            subject => subject.final_grade && parseFloat(subject.final_grade) > 0
+        );
 
-        if (!studentInfo.student_current_gpa || !studentInfo.student_current_semester) {
-            setError('Vui lòng nhập GPA và học kỳ hiện tại');
+        if (completedSubjects.length === 0) {
+            setError('Vui lòng thêm ít nhất một môn học và nhập điểm cuối kỳ');
             return;
         }
 
@@ -371,36 +514,10 @@ const PredictionForm = () => {
 
             <form className="prediction-form" onSubmit={handleSubmit}>
                 <div className="form-section">
-                    <h3>Thông tin cơ bản</h3>
-                    <div className="form-row">
-                        <div className="form-group">
-                            <label htmlFor="student_current_gpa">GPA hiện tại:</label>
-                            <input
-                                type="number"
-                                id="student_current_gpa"
-                                name="student_current_gpa"
-                                min="0"
-                                max="10"
-                                step="0.01"
-                                value={studentInfo.student_current_gpa}
-                                onChange={handleStudentInfoChange}
-                                required
-                            />
-                        </div>
-
-                        <div className="form-group">
-                            <label htmlFor="student_current_semester">Học kỳ hiện tại:</label>
-                            <input
-                                type="number"
-                                id="student_current_semester"
-                                name="student_current_semester"
-                                min="1"
-                                max="12"
-                                value={studentInfo.student_current_semester}
-                                onChange={handleStudentInfoChange}
-                                required
-                            />
-                        </div>
+                    <h3>Thông tin học tập</h3>
+                    <div style={styles.infoBox}>
+                        <p><strong>GPA hiện tại:</strong> {calculatedGPA > 0 ? calculatedGPA : 'Chưa có dữ liệu'}</p>
+                        <p><em>Lưu ý: GPA được tính tự động dựa trên điểm các thành phần (chuyên cần, giữa kỳ, cuối kỳ, bài tập) theo tỷ lệ phần trăm riêng của từng môn.</em></p>
                     </div>
                 </div>
 
@@ -564,7 +681,7 @@ const PredictionForm = () => {
 
             {result && (
                 <div className="prediction-result">
-                    <h3>Kết quả dự đoán</h3>
+                    <h2>Kết quả dự đoán</h2>
 
                     {/* Phần dự đoán chuyên ngành */}
                     <div className="section">

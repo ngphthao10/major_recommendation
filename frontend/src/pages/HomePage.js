@@ -1,12 +1,13 @@
 import React from 'react';
 import StudentList from '../components/StudentList';
 
+
 const HomePage = () => {
     return (
         <div className="home-page">
             <div className="hero-section">
                 <h1>Hệ thống gợi ý chuyên ngành cho sinh viên</h1>
-                <p>Dựa trên kết quả học tập và sở thích cá nhân</p>
+                <p>Dựa trên kết quả học tập</p>
             </div>
             <StudentList />
         </div>
@@ -14,3 +15,4 @@ const HomePage = () => {
 };
 
 export default HomePage;
+

@@ -17,9 +17,10 @@ def generate_features_from_student_data(student_df):
     # Trích xuất thông tin sinh viên từ dòng đầu tiên
     student_id = student_df['student_id'].iloc[0]
     gpa = student_df['student_current_gpa'].iloc[0]
-    semester = student_df['student_current_semester'].iloc[0]
+    # semester = student_df['student_current_semester'].iloc[0]
     
-    print(f"Thông tin sinh viên: ID={student_id}, Kỳ={semester}, GPA={gpa}")
+    # print(f"Thông tin sinh viên: ID={student_id}, Kỳ={semester}, GPA={gpa}")
+    print(f"Thông tin sinh viên: ID={student_id}")
 
     # Tính điểm trung bình theo loại môn học
     avg_by_category = student_df.groupby('subject_category')['final_grade'].mean()
@@ -101,7 +102,7 @@ def generate_features_from_student_data(student_df):
             proficiency = 0  
         
         skill_proficiency[skill] = {
-            'proficiency': proficiency,
+            'proficiency': proficiency * count,
             'count': count,
             'avg_grade': avg_grade
         }
@@ -117,7 +118,7 @@ def generate_features_from_student_data(student_df):
     feature = {
         'student_id': student_id,
         'gpa': gpa,
-        'semester': semester,
+        # 'semester': semester,
         'avg_midterm': avg_midterm,
         'avg_assignment': avg_assignment,
         'avg_attendance': avg_attendance,
@@ -135,79 +136,50 @@ def generate_features_from_student_data(student_df):
     feature.update(grade_groups)
     
     # Thêm top kỹ năng với thông tin mức độ thành thạo
-    for i, (skill, data) in enumerate(sorted_skills[:15]):
+    for i, (skill, data) in enumerate(sorted_skills):
         safe_skill_name = skill.replace(" ", "_").replace("-", "_").replace(".", "_")
         feature[f'skill_{safe_skill_name}'] = data['count']
         feature[f'skill_{safe_skill_name}_level'] = data['proficiency']
         feature[f'skill_{safe_skill_name}_grade'] = data['avg_grade']
     
-   # In ra danh sách đặc trưng và giá trị của chúng
-    print("\nDanh sách đặc trưng đã tạo:")
-    for i, (key, value) in enumerate(feature.items()):
-        if key != 'student_id':  # Bỏ qua student_id
-            print(f"{i+1}. {key}: {value}")
-    
     # Tạo vector đặc trưng từ từ điển
     feature_vector = _dict_to_vector(feature)
-    
-    # In ra vector đặc trưng cuối cùng
-    print("\nVector đặc trưng cuối cùng:")
-    for i, value in enumerate(feature_vector):
-        print(f"{i+1}. {value}")
-    
 
     print(f"\nĐã tạo {len(feature_vector)} đặc trưng")
     return feature_vector
 
 def _dict_to_vector(feature_dict):
     model_features = [
-        'gpa', 'semester', 'avg_midterm', 'avg_assignment', 'avg_attendance', 'avg_retake',
-        'skill_count', 'avg_theory', 'avg_technique', 'avg_tool',
-        'count_core', 'count_general',
-        'count_average', 'count_good', 'count_excellent',
-        'percent_average', 'percent_good', 'percent_excellent',
-        'skill_Phân_tích', 'skill_Phân_tích_level', 'skill_Phân_tích_grade',
-        'skill_Quản_trị_mạng', 'skill_Quản_trị_mạng_level', 'skill_Quản_trị_mạng_grade',
-        'skill_Giao_thức_mạng', 'skill_Giao_thức_mạng_level', 'skill_Giao_thức_mạng_grade',
-        'skill_Machine_Learning', 'skill_Machine_Learning_level', 'skill_Machine_Learning_grade',
-        'skill_Tư_duy_phân_tích', 'skill_Tư_duy_phân_tích_level', 'skill_Tư_duy_phân_tích_grade',
-        'skill_Giải_quyết_vấn_đề', 'skill_Giải_quyết_vấn_đề_level', 'skill_Giải_quyết_vấn_đề_grade',
-        'skill_Bảo_mật', 'skill_Bảo_mật_level', 'skill_Bảo_mật_grade',
-        'skill_Tư_duy_toán_học', 'skill_Tư_duy_toán_học_level', 'skill_Tư_duy_toán_học_grade',
-        'skill_Xử_lý_dữ_liệu', 'skill_Xử_lý_dữ_liệu_level', 'skill_Xử_lý_dữ_liệu_grade',
-        'skill_Mã_hóa', 'skill_Mã_hóa_level', 'skill_Mã_hóa_grade',
-        'skill_Phân_tích_rủi_ro', 'skill_Phân_tích_rủi_ro_level', 'skill_Phân_tích_rủi_ro_grade',
-        'skill_Quy_trình_phát_triển', 'skill_Quy_trình_phát_triển_level', 'skill_Quy_trình_phát_triển_grade',
-        'skill_Kiểm_thử', 'skill_Kiểm_thử_level', 'skill_Kiểm_thử_grade',
-        'skill_Quản_lý_dự_án', 'skill_Quản_lý_dự_án_level', 'skill_Quản_lý_dự_án_grade',
-        'skill_Thiết_kế_database', 'skill_Thiết_kế_database_level', 'skill_Thiết_kế_database_grade',
-        'skill_Lập_trình', 'skill_Lập_trình_level', 'skill_Lập_trình_grade',
-        'skill_Phân_tích_tín_hiệu', 'skill_Phân_tích_tín_hiệu_level', 'skill_Phân_tích_tín_hiệu_grade',
-        'skill_Tư_duy_thuật_toán', 'skill_Tư_duy_thuật_toán_level', 'skill_Tư_duy_thuật_toán_grade',
-        'skill_Tối_ưu_hóa', 'skill_Tối_ưu_hóa_level', 'skill_Tối_ưu_hóa_grade',
-        'skill_Truy_vấn', 'skill_Truy_vấn_level', 'skill_Truy_vấn_grade',
-        'skill_Quản_lý_dữ_liệu', 'skill_Quản_lý_dữ_liệu_level', 'skill_Quản_lý_dữ_liệu_grade',
-        'skill_Tự_tin', 'skill_Tự_tin_level', 'skill_Tự_tin_grade',
-        'skill_Phân_tích_dữ_liệu', 'skill_Phân_tích_dữ_liệu_level', 'skill_Phân_tích_dữ_liệu_grade',
-        'skill_Xử_lý_số_liệu', 'skill_Xử_lý_số_liệu_level', 'skill_Xử_lý_số_liệu_grade',
-        'skill_Thống_kê', 'skill_Thống_kê_level', 'skill_Thống_kê_grade',
-        'skill_Giao_tiếp', 'skill_Giao_tiếp_level', 'skill_Giao_tiếp_grade',
-        'skill_Thuyết_trình', 'skill_Thuyết_trình_level', 'skill_Thuyết_trình_grade',
-        'skill_Làm_việc_nhóm', 'skill_Làm_việc_nhóm_level', 'skill_Làm_việc_nhóm_grade',
-        'skill_Quản_lý_thời_gian', 'skill_Quản_lý_thời_gian_level', 'skill_Quản_lý_thời_gian_grade',
-        'skill_Ngoại_ngữ', 'skill_Ngoại_ngữ_level', 'skill_Ngoại_ngữ_grade',
-        'skill_Quản_lý_tài_nguyên', 'skill_Quản_lý_tài_nguyên_level', 'skill_Quản_lý_tài_nguyên_grade',
-        'skill_Lập_trình_hệ_thống', 'skill_Lập_trình_hệ_thống_level', 'skill_Lập_trình_hệ_thống_grade',
-        'skill_Process', 'skill_Process_level', 'skill_Process_grade', 
-        'skill_Lập_trình_OOP', 'skill_Lập_trình_OOP_level', 'skill_Lập_trình_OOP_grade', 
-        'skill_Tư_duy_logic', 'skill_Tư_duy_logic_level', 'skill_Tư_duy_logic_grade',  
-        'skill_Thiết_kế_phần_mềm', 'skill_Thiết_kế_phần_mềm_level', 'skill_Thiết_kế_phần_mềm_grade',
-        'skill_Mô_hình_hóa', 'skill_Mô_hình_hóa_level', 'skill_Mô_hình_hóa_grade'
+        'gpa','avg_midterm','avg_assignment','avg_attendance','avg_retake','skill_count','avg_theory','avg_technique','avg_tool',
+        'count_core','count_general','count_average','count_good','count_excellent','percent_average','percent_good','percent_excellent',
+        'skill_Giải_quyết_vấn_đề','skill_Giải_quyết_vấn_đề_level','skill_Giải_quyết_vấn_đề_grade','skill_Bảo_mật','skill_Bảo_mật_level',
+        'skill_Bảo_mật_grade','skill_Tư_duy_toán_học','skill_Tư_duy_toán_học_level','skill_Tư_duy_toán_học_grade','skill_Xử_lý_dữ_liệu',
+        'skill_Xử_lý_dữ_liệu_level','skill_Xử_lý_dữ_liệu_grade','skill_Lập_trình','skill_Lập_trình_level','skill_Lập_trình_grade',
+        'skill_Phân_tích','skill_Phân_tích_level','skill_Phân_tích_grade','skill_Quản_trị_mạng','skill_Quản_trị_mạng_level',
+        'skill_Quản_trị_mạng_grade','skill_Giao_thức_mạng','skill_Giao_thức_mạng_level','skill_Giao_thức_mạng_grade','skill_Machine_Learning',
+        'skill_Machine_Learning_level','skill_Machine_Learning_grade','skill_Tư_duy_phân_tích','skill_Tư_duy_phân_tích_level',
+        'skill_Tư_duy_phân_tích_grade','skill_Tư_duy_logic','skill_Tư_duy_logic_level','skill_Tư_duy_logic_grade','skill_Giao_tiếp',
+        'skill_Giao_tiếp_level','skill_Giao_tiếp_grade','skill_Mã_hóa','skill_Mã_hóa_level','skill_Mã_hóa_grade','skill_Phân_tích_rủi_ro',
+        'skill_Phân_tích_rủi_ro_level','skill_Phân_tích_rủi_ro_grade','skill_Quy_trình_phát_triển','skill_Quy_trình_phát_triển_level',
+        'skill_Quy_trình_phát_triển_grade','skill_Kiểm_thử','skill_Kiểm_thử_level','skill_Kiểm_thử_grade','skill_Quản_lý_dự_án',
+        'skill_Quản_lý_dự_án_level','skill_Quản_lý_dự_án_grade','skill_Thiết_kế_database','skill_Thiết_kế_database_level',
+        'skill_Thiết_kế_database_grade','skill_Truy_vấn','skill_Truy_vấn_level','skill_Truy_vấn_grade','skill_Quản_lý_dữ_liệu',
+        'skill_Quản_lý_dữ_liệu_level','skill_Quản_lý_dữ_liệu_grade','skill_Phân_tích_tín_hiệu','skill_Phân_tích_tín_hiệu_level',
+        'skill_Phân_tích_tín_hiệu_grade','skill_Thuyết_trình','skill_Thuyết_trình_level','skill_Thuyết_trình_grade','skill_Tự_tin',
+        'skill_Tự_tin_level','skill_Tự_tin_grade','skill_Làm_việc_nhóm','skill_Làm_việc_nhóm_level','skill_Làm_việc_nhóm_grade',
+        'skill_Quản_lý_thời_gian','skill_Quản_lý_thời_gian_level','skill_Quản_lý_thời_gian_grade','skill_Quản_lý_tài_nguyên',
+        'skill_Quản_lý_tài_nguyên_level','skill_Quản_lý_tài_nguyên_grade','skill_Lập_trình_hệ_thống','skill_Lập_trình_hệ_thống_level',
+        'skill_Lập_trình_hệ_thống_grade','skill_Process','skill_Process_level','skill_Process_grade','skill_Phân_tích_dữ_liệu',
+        'skill_Phân_tích_dữ_liệu_level','skill_Phân_tích_dữ_liệu_grade','skill_Xử_lý_số_liệu','skill_Xử_lý_số_liệu_level','skill_Xử_lý_số_liệu_grade'
+        ,'skill_Thống_kê','skill_Thống_kê_level','skill_Thống_kê_grade','skill_Lập_trình_OOP','skill_Lập_trình_OOP_level','skill_Lập_trình_OOP_grade',
+        'skill_Thiết_kế_phần_mềm','skill_Thiết_kế_phần_mềm_level','skill_Thiết_kế_phần_mềm_grade','skill_Mô_hình_hóa','skill_Mô_hình_hóa_level',
+        'skill_Mô_hình_hóa_grade','skill_Tư_duy_thuật_toán','skill_Tư_duy_thuật_toán_level','skill_Tư_duy_thuật_toán_grade','skill_Tối_ưu_hóa',
+        'skill_Tối_ưu_hóa_level','skill_Tối_ưu_hóa_grade','skill_Ngoại_ngữ','skill_Ngoại_ngữ_level','skill_Ngoại_ngữ_grade'
     ]
     
-    if len(model_features) != 131:
-        print(f"CẢNH BÁO: Danh sách đặc trưng có {len(model_features)} phần tử, cần 131 phần tử!")
-        while len(model_features) < 131:
+    if len(model_features) != 130:
+        print(f"CẢNH BÁO: Danh sách đặc trưng có {len(model_features)} phần tử, cần 128 phần tử!")
+        while len(model_features) < 130:
             model_features.append(f'extra_feature_{len(model_features) + 1}')
     
     feature_vector = []
