@@ -22,3 +22,7 @@ $ cd backend
 $ pip install -r requirements.txt
 $ python app.py
 ```
+
+### About EDA and ML
+---
+https://www.kaggle.com/code/ngphthao10/update-major
